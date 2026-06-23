@@ -98,7 +98,15 @@ tbody tr:hover td.col-name { background: #1e1e2a !important; }
 
 td { padding: 5px 4px; text-align: center; border-bottom: 1px solid #1e1e28; vertical-align: middle; }
 td.col-name { background: #0f0f13; font-weight: 500; white-space: nowrap; color: #e0ddf0; }
-td.col-cn   { white-space: nowrap; color: #8b8faa; font-size: 11px; }
+td.col-cn   { white-space: nowrap; color: #8b8faa; font-size: 11px; cursor: pointer; }
+td.col-cn:hover { color: #c0bdd8; }
+#copy-toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: #2a2a3a; color: #86efac; font-size: 12px;
+  padding: 7px 16px; border-radius: 20px; border: 1px solid #166534;
+  opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  z-index: 9999;
+}
 td.col-note { color: #c0bdd8; font-size: 11px; white-space: nowrap; }
 
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
@@ -172,6 +180,7 @@ td.hl-now-active .dot, td.hl-next-active .dot { transform: scale(1.4); }
     <div class="leg"><span class="leg-dot special"></span>특수/조건</div>
   </div>
 
+  <div id="copy-toast">복사됨</div>
   <div id="scroll-top" class="scrollbar-styled"><div id="scroll-top-inner"></div></div>
   <div id="tbl-wrap" class="scrollbar-styled"></div>
 </div>
@@ -320,6 +329,22 @@ function tick(){
     });
   }
 }
+
+// 중국어명 클릭 복사
+let toastTimer = null;
+document.getElementById('tbl-wrap').addEventListener('click', e => {
+  const td = e.target.closest('td.col-cn');
+  if (!td) return;
+  const text = td.textContent.trim();
+  if (!text || text === '-') return;
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('copy-toast');
+    toast.textContent = `"${text}" 복사됨`;
+    toast.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 1500);
+  });
+});
 
 tick();
 syncScrollbars();
