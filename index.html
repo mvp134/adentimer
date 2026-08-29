@@ -13,20 +13,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', '맑은 
 #clock-box { display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 14px 20px; background: #1a1a24; border: 1px solid #2a2a3a; border-radius: 12px; min-width: 200px; }
 #clock { font-size: 48px; font-weight: 600; color: #fff; letter-spacing: 3px; font-variant-numeric: tabular-nums; line-height: 1; }
 #clock-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-.boss-panel { flex: 1; min-width: 220px; background: #1a1a24; border: 1px solid #2a2a3a; border-radius: 12px; padding: 12px 16px; }
+.schedule-panel { flex: 1; min-width: 220px; background: #1a1a24; border: 1px solid #2a2a3a; border-radius: 12px; padding: 12px 16px; }
 .panel-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
-.panel-title .hr-badge { font-size: 13px; font-weight: 700; padding: 2px 8px; border-radius: 6px; font-variant-numeric: tabular-nums; }
-.panel-now  .panel-title { color: #4ade80; }
-.panel-now  .hr-badge    { background: #14532d; color: #86efac; }
-.panel-next .panel-title { color: #60a5fa; }
-.panel-next .hr-badge    { background: #0c2a4a; color: #93c5fd; }
-.tag-list { display: flex; flex-wrap: wrap; gap: 5px; min-height: 26px; align-items: flex-start; }
-.active-tag { font-size: 12px; padding: 3px 9px; border-radius: 20px; font-weight: 500; white-space: nowrap; }
-.active-tag.normal  { background: #0d4a2e; color: #86efac; border: 1px solid #166534; }
-.active-tag.always  { background: #0c2a4a; color: #93c5fd; border: 1px solid #1e40af; }
-.active-tag.special { background: #4a2d00; color: #fcd34d; border: 1px solid #92400e; }
-.active-tag.prob    { background: #4a0d0d; color: #fca5a5; border: 1px solid #991b1b; }
-.empty-msg { font-size: 12px; color: #555; }
+.schedule-weekday .panel-title { color: #4ade80; }
+.schedule-weekend .panel-title { color: #60a5fa; }
+.schedule-content { color: #d8d5e4; font-size: 13px; line-height: 1.6; }
 
 #legend { display: flex; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
 .leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #aaa; }
@@ -65,9 +56,7 @@ table { border-collapse: collapse; font-size: 11px; table-layout: fixed; width: 
 
 /* 고정 열 너비 */
 thead th.col-name, td.col-name { width: 150px; min-width: 150px; }
-thead th.col-cn,   td.col-cn   { width: 140px; min-width: 140px; }
 thead th.hr-col,   td.hr-col   { width: 26px;  min-width: 26px;  text-align: center; padding: 0; }
-thead th.col-note, td.col-note { width: 200px; min-width: 200px; }
 
 /* sticky 설정 - 보스명만 고정 */
 thead th.col-name, td.col-name {
@@ -75,13 +64,6 @@ thead th.col-name, td.col-name {
   position: sticky; left: 0; z-index: 3;
   border-right: 1px solid #3a3a4a;
 }
-thead th.col-cn, td.col-cn {
-  text-align: left; padding-left: 8px;
-}
-thead th.col-note, td.col-note {
-  text-align: left; padding-left: 10px;
-}
-
 thead th {
   background: #1a1a24;
   border-bottom: 1px solid #2a2a3a;
@@ -98,16 +80,21 @@ tbody tr:hover td.col-name { background: #1e1e2a !important; }
 
 td { padding: 5px 4px; text-align: center; border-bottom: 1px solid #1e1e28; vertical-align: middle; }
 td.col-name { background: #0f0f13; font-weight: 500; white-space: nowrap; color: #e0ddf0; }
-td.col-cn   { white-space: nowrap; color: #8b8faa; font-size: 11px; cursor: pointer; }
-td.col-cn:hover { color: #c0bdd8; }
-#copy-toast {
-  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
-  background: #2a2a3a; color: #86efac; font-size: 12px;
-  padding: 7px 16px; border-radius: 20px; border: 1px solid #166534;
-  opacity: 0; pointer-events: none; transition: opacity 0.2s;
-  z-index: 9999;
+
+/* 현재 시간에 출현하는 보스 행 */
+tbody tr.row-active td {
+  background: #142a1c !important;
+  border-top: 1px solid #28643e;
+  border-bottom: 1px solid #28643e;
 }
-td.col-note { color: #c0bdd8; font-size: 11px; white-space: nowrap; }
+tbody tr.row-active td.col-name {
+  background: #183622 !important;
+  color: #bbf7d0;
+  font-weight: 700;
+  box-shadow: inset 4px 0 0 #4ade80;
+}
+tbody tr.row-active:hover td { background: #1b3a26 !important; }
+tbody tr.row-active td.hl-now-active { background: #1a4d2a !important; }
 
 .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; }
 .dot.normal  { background: #4ade80; box-shadow: 0 0 5px #4ade8099; }
@@ -140,7 +127,6 @@ td.hl-now-active .dot, td.hl-next-active .dot { transform: scale(1.4); }
   #clock { font-size: 34px; }
   #header { flex-direction: column; }
   thead th.col-name, td.col-name { width: 110px; min-width: 110px; }
-  thead th.col-cn,   td.col-cn   { width: 100px; min-width: 100px; }
 }
 </style>
 </head>
@@ -151,27 +137,19 @@ td.hl-now-active .dot, td.hl-next-active .dot { transform: scale(1.4); }
       <div id="clock">00:00:00</div>
       <div id="clock-label">KST 현재 시간</div>
     </div>
-    <div class="boss-panel panel-now">
-      <div class="panel-title">
-        <span class="hr-badge" id="now-badge">00시</span>
-        타임 보스
-      </div>
-      <div class="tag-list" id="list-now"></div>
+    <div class="schedule-panel schedule-weekday">
+      <div class="panel-title">📅 월·화·수·목·금</div>
+      <div class="schedule-content">21시 15분 / 22시 15분<br>파멸 기란감옥 3층·4층 등장</div>
     </div>
-    <div class="boss-panel panel-next">
-      <div class="panel-title">
-        <span class="hr-badge" id="next-badge">01시</span>
-        다음 타임 보스
-      </div>
-      <div class="tag-list" id="list-next"></div>
+    <div class="schedule-panel schedule-weekend">
+      <div class="panel-title">📅 금·토·일 22시</div>
+      <div class="schedule-content">샌드웜, 에르자베 등장</div>
     </div>
   </div>
 
   <div id="notice">
-    <div class="notice-item"><div class="notice-title">📅 월·화·수·목·금</div>21시 15분 / 22시 15분<br>파멸 기란감옥 3층·4층 등장</div>
-    <div class="notice-item"><div class="notice-title">📅 금·토·일 22시</div>샌드웜, 에르자베 등장</div>
     <div class="notice-item"><div class="notice-title">🕐 홀수시간 숨겨진 오만 1~10층</div>01 03 05 07 09 11 13 15 17 21 23시</div>
-    <div class="notice-item"><div class="notice-title">⚔️ 격주 일요일</div>21시 본토 공성</div>
+    <div class="notice-item"><div class="notice-title">🛠️ 매일 19시</div>점검 시간 · 보스 출현 없음</div>
   </div>
 
   <div id="legend">
@@ -180,43 +158,49 @@ td.hl-now-active .dot, td.hl-next-active .dot { transform: scale(1.4); }
     <div class="leg"><span class="leg-dot special"></span>특수/조건</div>
   </div>
 
-  <div id="copy-toast">복사됨</div>
   <div id="scroll-top" class="scrollbar-styled"><div id="scroll-top-inner"></div></div>
   <div id="tbl-wrap" class="scrollbar-styled"></div>
 </div>
 
 <script>
 const HOURS = Array.from({length:24},(_,i)=>i);
+const EVERY_HOURS = HOURS.filter(h=>h!==19);
+const ODD_HOURS = [1,3,5,7,9,11,13,15,17,21,23];
 
 const BOSSES = [
-  // ── 매시간 ──
-  { name:"악마감시자", cn:"惡魔監視者", type:"always", hours:HOURS, location:"상아탑 7층" },
-  { name:"거대 드레이크", cn:"飛龍", type:"always", hours:HOURS, location:"용의 계곡" },
-  { name:"맘보토끼", cn:"曼波兔王", type:"always", hours:HOURS, location:"정령의 무덤" },
   // ── 일반 ──
-  { name:"정령감시자(무덤)", cn:"精靈監視者", type:"normal", hours:[1,3,5,7,9,11,13,15,17,19,21,23], location:"정령의 무덤" },
-  { name:"카스파 패밀리", cn:"四色", type:"normal", hours:[1,3,5,7,9,11,13,15,17,19,21,23], location:"글루딘던전 3·4층" },
-  { name:"큰발의 마요", cn:"大腳瑪幽", type:"normal", hours:[1,3,5,7,9,11,13,15,17,19,21,23], location:"설벽" },
-  { name:"도펠겡어 보스", cn:"變形怪首領", type:"normal", hours:[0,3,6,9,12,15,18], location:"거울의 숲" },
-  { name:"흑기사 대장", cn:"暗黑大將軍", type:"normal", hours:[0,3,6,9,12,15,18], location:"망자의 무덤" },
-  { name:"대흑장로", cn:"大黑長者", type:"normal", hours:[0,3,6,9,12,15,18], location:"용의 계곡" },
-  { name:"네크로맨서", cn:"奈克", type:"normal", hours:[0,3,6,9,12,15,18], location:"글루딘던전 6층" },
-  { name:"아르피어", cn:"伊弗利特", type:"normal", hours:[1,5,9,13,17], location:"말하는 섬" },
-  { name:"커츠", cn:"克特", type:"normal", hours:[1,5,9,13,17], location:"말하는 섬" },
-  { name:"질풍의 샤스키", cn:"疾風夏斯奇", type:"normal", hours:[1,5,9,13,17], location:"엘모어 격전지" },
-  { name:"광풍의 샤스키", cn:"狂風夏斯奇", type:"normal", hours:[1,5,9,13,17], location:"엘모어 격전지" },
-  { name:"피닉스 / 이프리트", cn:"烈炎火花不死鳥", type:"normal", hours:[3,9,15], location:"화둥 정상" },
-  { name:"데스나이트", cn:"死亡騎士", type:"normal", hours:[3,9,15], location:"글루딘던전 7층" },
-  { name:"데몬", cn:"惡魔", type:"normal", hours:[3,9,15], location:"상아탑 8층" },
-  { name:"에이션트 자이언트", cn:"古代巨人", type:"normal", hours:[3,9,15], location:"황혼의 산맥" },
-  { name:"화염의 데스나이트", cn:"烈焰的死亡騎士", type:"normal", hours:[0], location:"화염던전 2층" },
-  { name:"간수장 타로스(퀘2)", cn:"塔洛斯", type:"normal", hours:[3,9,15], location:"기란감옥 2층" },
-  { name:"폭주한 클라인(파1)", cn:"暴走的克萊恩", type:"normal", hours:[3,9,15], location:"파멸 1층" },
-  { name:"암흑영주 타로스(파2)", cn:"暗黑領主塔洛斯", type:"normal", hours:[6,13], location:"파멸 2층" },
+  { name:"도펠겡어 보스", type:"normal", hours:[0,3,6,9,12,15,18] },
+  { name:"산적두목", type:"normal", hours:[0,3,6,9,12,15,18] },
+  { name:"흑기사 대장", type:"normal", hours:[0,3,6,9,12,15,18] },
+  { name:"대흑장로", type:"normal", hours:[0,3,6,9,12,15,18] },
+  { name:"네크로맨서", type:"normal", hours:[0,3,6,9,12,15,18] },
+  { name:"아르피어", type:"normal", hours:[1,5,9,13,17] },
+  { name:"커츠", type:"normal", hours:[1,5,9,13,17] },
+  { name:"질풍의 샤스키", type:"normal", hours:[1,5,9,13,17] },
+  { name:"광풍의 샤스키", type:"normal", hours:[1,5,9,13,17] },
+  { name:"피닉스 / 이프리트", type:"normal", hours:[3,9,15] },
+  { name:"데스나이트", type:"normal", hours:[3,9,15] },
+  { name:"데몬", type:"normal", hours:[3,9,15] },
+  { name:"에이션트 자이언트", type:"normal", hours:[3,9,15] },
+  { name:"화염의 데스나이트", type:"normal", hours:[0] },
+  { name:"간수장 타로스(퀘2)", type:"normal", hours:[3,9,15] },
+  { name:"폭주한 클라인(파1)", type:"normal", hours:[3,9,15] },
+  { name:"암흑영주 타로스(파2)", type:"normal", hours:[6,13] },
   // ── 특수/조건 ──
-  { name:"수문장 고르고스(파3)", cn:"守門將哥洛古斯", type:"special", hours:[21], location:"파멸 3층" },
-  { name:"대부 텍투스(파4)", cn:"教父戴克托斯", type:"special", hours:[22], location:"파멸 4층" },
-  { name:"월드 보스", cn:"世界首領", type:"special", hours:[8,14,20,21,22,23], location:"월드 보스" },
+  { name:"수문장 고르고스(파3)", type:"special", hours:[21] },
+  { name:"대부 텍투스(파4)", type:"special", hours:[22] },
+  { name:"월드 보스", type:"special", hours:[8,14,20,21,22,23] },
+  // ── 매시간 (19시 점검 제외) ──
+  { name:"악마감시자", type:"always", group:"hourly", hours:EVERY_HOURS },
+  { name:"거대 드레이크", type:"always", group:"hourly", hours:EVERY_HOURS },
+  { name:"맘보토끼", type:"always", group:"hourly", hours:EVERY_HOURS },
+  { name:"가스트로드", type:"always", group:"hourly", hours:EVERY_HOURS },
+  // ── 홀수시간 (19시 점검 제외) ──
+  { name:"정령감시자(무덤)", type:"normal", group:"odd", hours:ODD_HOURS },
+  { name:"카스파 패밀리", type:"normal", group:"odd", hours:ODD_HOURS },
+  { name:"큰발의 마요", type:"normal", group:"odd", hours:ODD_HOURS },
+  { name:"네크로스 / 오르쿠스", type:"normal", group:"odd", hours:ODD_HOURS },
+  { name:"숨겨진 오만 보스", type:"normal", group:"odd", hours:ODD_HOURS },
 ];
 
 function getKST(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'})); }
@@ -224,19 +208,25 @@ function pad(n){ return String(n).padStart(2,'0'); }
 
 function buildTable(nowH, nextH){
   let html='<table><thead><tr>'
-    +'<th class="col-name">보스명</th>'
-    +'<th class="col-cn">중국어명</th>';
+    +'<th class="col-name">보스명</th>';
   for(let h=0;h<24;h++){
     let cls='hr-col';
     if(h===nowH) cls+=' hl-now';
     else if(h===nextH) cls+=' hl-next';
     html+=`<th class="${cls}">${pad(h)}</th>`;
   }
-  html+='<th class="col-note">위치 / 비고</th></tr></thead><tbody>';
-  for(const b of BOSSES){
-    html+=`<tr>`
-      +`<td class="col-name">${b.name}</td>`
-      +`<td class="col-cn">${b.cn||'-'}</td>`;
+  html+='</tr></thead><tbody>';
+  const groupOrder={regular:0,hourly:1,odd:2};
+  const sortedBosses=[...BOSSES].sort((a,b)=>{
+    const aActive=a.hours.includes(nowH);
+    const bActive=b.hours.includes(nowH);
+    if(aActive!==bActive) return aActive?-1:1;
+    return groupOrder[a.group||'regular']-groupOrder[b.group||'regular'];
+  });
+  for(const b of sortedBosses){
+    const rowClass=b.hours.includes(nowH)?' class="row-active"':'';
+    html+=`<tr${rowClass}>`
+      +`<td class="col-name">${b.name}</td>`;
     for(let h=0;h<24;h++){
       const has=b.hours.includes(h);
       let cls='hr-col';
@@ -244,17 +234,10 @@ function buildTable(nowH, nextH){
       else if(h===nextH) cls+= has?' hl-next-active':' hl-next';
       html+=`<td class="${cls}">${has?`<span class="dot ${b.type}"></span>`:''}</td>`;
     }
-    html+=`<td class="col-note">${b.location}</td></tr>`;
+    html+='</tr>';
   }
   html+='</tbody></table>';
   return html;
-}
-
-function renderTags(listId, hour){
-  const active=BOSSES.filter(b=>b.hours.includes(hour));
-  document.getElementById(listId).innerHTML = active.length===0
-    ? '<span class="empty-msg">리젠 없음</span>'
-    : active.map(b=>`<span class="active-tag ${b.type}">${b.name}</span>`).join('');
 }
 
 /* 드래그 스크롤 */
@@ -302,7 +285,7 @@ function centerCurrentHour(){
   const wrap=document.getElementById('tbl-wrap');
   const hlTh=document.querySelector('thead th.hl-now');
   if(!hlTh) return;
-  const stickyW = 150; // col-name만 고정
+  const stickyW = document.querySelector('thead th.col-name')?.offsetWidth || 150;
   const thLeft  = hlTh.offsetLeft;
   const thW     = hlTh.offsetWidth;
   const wrapW   = wrap.clientWidth;
@@ -316,10 +299,6 @@ function tick(){
   const h=kst.getHours(), m=kst.getMinutes(), s=kst.getSeconds();
   const nextH=(h+1)%24;
   document.getElementById('clock').textContent=`${pad(h)}:${pad(m)}:${pad(s)}`;
-  document.getElementById('now-badge').textContent=`${pad(h)}시`;
-  document.getElementById('next-badge').textContent=`${pad(nextH)}시`;
-  renderTags('list-now', h);
-  renderTags('list-next', nextH);
   if(h!==lastHour){
     lastHour=h;
     document.getElementById('tbl-wrap').innerHTML=buildTable(h, nextH);
@@ -329,22 +308,6 @@ function tick(){
     });
   }
 }
-
-// 중국어명 클릭 복사
-let toastTimer = null;
-document.getElementById('tbl-wrap').addEventListener('click', e => {
-  const td = e.target.closest('td.col-cn');
-  if (!td) return;
-  const text = td.textContent.trim();
-  if (!text || text === '-') return;
-  navigator.clipboard.writeText(text).then(() => {
-    const toast = document.getElementById('copy-toast');
-    toast.textContent = `"${text}" 복사됨`;
-    toast.style.opacity = '1';
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => { toast.style.opacity = '0'; }, 1500);
-  });
-});
 
 tick();
 syncScrollbars();
