@@ -106,12 +106,9 @@ tbody tr.row-active td.hl-now-active { background: #1a4d2a !important; }
 .dot.prob    { background: #f87171; box-shadow: 0 0 5px #f8717199; }
 
 thead th.hl-now  { background: #14532d !important; color: #bbf7d0 !important; border-bottom: 2px solid #4ade80 !important; }
-thead th.hl-next { background: #0c2a4a !important; color: #bfdbfe !important; border-bottom: 2px solid #60a5fa !important; }
 td.hl-now        { background: #162412 !important; }
 td.hl-now-active { background: #1a4d2a !important; }
-td.hl-next       { background: #0e1a2e !important; }
-td.hl-next-active{ background: #102040 !important; }
-td.hl-now-active .dot, td.hl-next-active .dot { transform: scale(1.4); }
+td.hl-now-active .dot { transform: scale(1.4); }
 
 @media (max-width: 700px) {
   #clock { font-size: 34px; }
@@ -196,32 +193,30 @@ const BOSSES = [
 function getKST(){ return new Date(new Date().toLocaleString('en-US',{timeZone:'Asia/Seoul'})); }
 function pad(n){ return String(n).padStart(2,'0'); }
 
-function buildTable(nowH, nextH){
+function buildTable(focusH){
   let html='<table><thead><tr>'
     +'<th class="col-name">보스명</th>';
   for(let h=0;h<24;h++){
     let cls='hr-col';
-    if(h===nowH) cls+=' hl-now';
-    else if(h===nextH) cls+=' hl-next';
+    if(h===focusH) cls+=' hl-now';
     html+=`<th class="${cls}">${pad(h)}</th>`;
   }
   html+='</tr></thead><tbody>';
   const groupOrder={regular:0,hourly:1,odd:2};
   const sortedBosses=[...BOSSES].sort((a,b)=>{
-    const aActive=a.hours.includes(nowH);
-    const bActive=b.hours.includes(nowH);
+    const aActive=a.hours.includes(focusH);
+    const bActive=b.hours.includes(focusH);
     if(aActive!==bActive) return aActive?-1:1;
     return groupOrder[a.group||'regular']-groupOrder[b.group||'regular'];
   });
   for(const b of sortedBosses){
-    const rowClass=b.hours.includes(nowH)?' class="row-active"':'';
+    const rowClass=b.hours.includes(focusH)?' class="row-active"':'';
     html+=`<tr${rowClass}>`
       +`<td class="col-name">${b.name}</td>`;
     for(let h=0;h<24;h++){
       const has=b.hours.includes(h);
       let cls='hr-col';
-      if(h===nowH)       cls+= has?' hl-now-active':' hl-now';
-      else if(h===nextH) cls+= has?' hl-next-active':' hl-next';
+      if(h===focusH) cls+= has?' hl-now-active':' hl-now';
       html+=`<td class="${cls}">${has?`<span class="dot ${b.type}"></span>`:''}</td>`;
     }
     html+='</tr>';
@@ -282,16 +277,16 @@ function centerCurrentHour(){
   wrap.scrollLeft = thLeft - stickyW - (wrapW - stickyW) / 2 + thW / 2;
 }
 
-let lastHour=-1;
+let lastFocusHour=-1;
 
 function tick(){
   const kst=getKST();
   const h=kst.getHours(), m=kst.getMinutes(), s=kst.getSeconds();
-  const nextH=(h+1)%24;
+  const focusH=m>=50?(h+1)%24:h;
   document.getElementById('clock').textContent=`${pad(h)}:${pad(m)}:${pad(s)}`;
-  if(h!==lastHour){
-    lastHour=h;
-    document.getElementById('tbl-wrap').innerHTML=buildTable(h, nextH);
+  if(focusH!==lastFocusHour){
+    lastFocusHour=focusH;
+    document.getElementById('tbl-wrap').innerHTML=buildTable(focusH);
     requestAnimationFrame(()=>{
       updateTopScrollWidth();
       centerCurrentHour();
