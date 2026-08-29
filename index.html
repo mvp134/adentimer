@@ -7,17 +7,18 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', '맑은 고딕', sans-serif; background: #0f0f13; color: #e8e6f0; min-height: 100vh; }
-#app { max-width: 1400px; margin: 0 auto; padding: 16px; }
+#app { max-width: 1400px; margin: 0 auto; padding: 16px; --timeline-width: 776px; }
 
-#header { display: flex; align-items: stretch; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
-#clock-box { display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 14px 20px; background: #1a1a24; border: 1px solid #2a2a3a; border-radius: 12px; min-width: 200px; }
+#header { display: flex; align-items: stretch; gap: 12px; margin-bottom: 14px; width: min(100%, var(--timeline-width)); }
+#clock-box { display: flex; flex: 0 0 258px; flex-direction: column; justify-content: center; gap: 4px; padding: 14px 20px; background: #1a1a24; border: 1px solid #2a2a3a; border-radius: 12px; min-width: 0; }
 #clock { font-size: 48px; font-weight: 600; color: #fff; letter-spacing: 3px; font-variant-numeric: tabular-nums; line-height: 1; }
 #clock-label { font-size: 11px; color: #888; text-transform: uppercase; letter-spacing: 1px; }
-.schedule-panel { flex: 1; min-width: 220px; background: #1a1a24; border: 1px solid #2a2a3a; border-radius: 12px; padding: 12px 16px; }
-.panel-title { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+#schedule-stack { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+.schedule-panel { flex: 1; min-width: 0; background: #1a1a24; border: 1px solid #2a2a3a; border-radius: 10px; padding: 6px 12px; display: flex; align-items: center; gap: 14px; }
+.panel-title { flex: 0 0 auto; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; white-space: nowrap; }
 .schedule-weekday .panel-title { color: #4ade80; }
 .schedule-weekend .panel-title { color: #60a5fa; }
-.schedule-content { color: #d8d5e4; font-size: 13px; line-height: 1.6; }
+.schedule-content { color: #d8d5e4; font-size: 12px; line-height: 1.35; white-space: nowrap; }
 
 #legend { display: flex; gap: 16px; margin-bottom: 10px; flex-wrap: wrap; align-items: center; }
 .leg { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #aaa; }
@@ -35,6 +36,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', '맑은 
 
 #scroll-top {
   overflow-x: auto; overflow-y: hidden;
+  width: min(100%, var(--timeline-width));
   border-radius: 8px 8px 0 0;
   border: 1px solid #2a2a3a; border-bottom: none;
   scrollbar-width: auto; scrollbar-color: #4a4a6a #1a1a24;
@@ -43,6 +45,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Malgun Gothic', '맑은 
 
 #tbl-wrap {
   overflow-x: auto; overflow-y: visible;
+  width: min(100%, var(--timeline-width));
   border-radius: 0 0 12px 12px;
   border: 1px solid #2a2a3a; border-top: none;
   -webkit-overflow-scrolling: touch;
@@ -110,22 +113,12 @@ td.hl-next       { background: #0e1a2e !important; }
 td.hl-next-active{ background: #102040 !important; }
 td.hl-now-active .dot, td.hl-next-active .dot { transform: scale(1.4); }
 
-#notice {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  margin-bottom: 10px;
-}
-.notice-item {
-  background: #1a1a24; border: 1px solid #2a2a3a; border-radius: 10px;
-  padding: 10px 14px; font-size: 12px; color: #c0bdd8; line-height: 1.7;
-}
-.notice-title {
-  font-size: 11px; color: #888; text-transform: uppercase;
-  letter-spacing: 0.5px; margin-bottom: 4px;
-}
-
 @media (max-width: 700px) {
   #clock { font-size: 34px; }
   #header { flex-direction: column; }
+  #clock-box { flex-basis: auto; }
+  .schedule-panel { min-height: 42px; flex-wrap: wrap; gap: 4px 12px; }
+  .schedule-content { white-space: normal; }
   thead th.col-name, td.col-name { width: 110px; min-width: 110px; }
 }
 </style>
@@ -137,19 +130,16 @@ td.hl-now-active .dot, td.hl-next-active .dot { transform: scale(1.4); }
       <div id="clock">00:00:00</div>
       <div id="clock-label">KST 현재 시간</div>
     </div>
-    <div class="schedule-panel schedule-weekday">
-      <div class="panel-title">📅 월·화·수·목·금</div>
-      <div class="schedule-content">21시 15분 / 22시 15분<br>파멸 기란감옥 3층·4층 등장</div>
+    <div id="schedule-stack">
+      <div class="schedule-panel schedule-weekday">
+        <div class="panel-title">📅 월·화·수·목·금</div>
+        <div class="schedule-content">21시 15분 / 22시 15분 · 파멸 기란감옥 3층·4층 등장</div>
+      </div>
+      <div class="schedule-panel schedule-weekend">
+        <div class="panel-title">📅 금·토·일 22시</div>
+        <div class="schedule-content">샌드웜, 에르자베 등장</div>
+      </div>
     </div>
-    <div class="schedule-panel schedule-weekend">
-      <div class="panel-title">📅 금·토·일 22시</div>
-      <div class="schedule-content">샌드웜, 에르자베 등장</div>
-    </div>
-  </div>
-
-  <div id="notice">
-    <div class="notice-item"><div class="notice-title">🕐 홀수시간 숨겨진 오만 1~10층</div>01 03 05 07 09 11 13 15 17 21 23시</div>
-    <div class="notice-item"><div class="notice-title">🛠️ 매일 19시</div>점검 시간 · 보스 출현 없음</div>
   </div>
 
   <div id="legend">
